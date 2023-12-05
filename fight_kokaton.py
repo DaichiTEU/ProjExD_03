@@ -2,6 +2,7 @@ import os
 import random
 import sys
 import time
+import math
 
 import pygame as pg
 
@@ -57,6 +58,7 @@ class Bird:
         # }
         img0 = pg.transform.rotozoom(pg.image.load(f"{MAIN_DIR}/fig/{num}.png"), 0, 2.0)
         img = pg.transform.flip(img0, True, False)  # デフォルトのこうかとん（右向き）
+        self.dire = (+5,0)
         self.imgs = {  # 0度から反時計回りに定義
             (+5, 0): img,  # 右
             (+5, -5): pg.transform.rotozoom(img, 45, 1.0),  # 右上
@@ -113,6 +115,7 @@ class Bird:
             self.rct.move_ip(-sum_mv[0], -sum_mv[1])
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.img = self.imgs[tuple(sum_mv)]
+            self.dire = (sum_mv[0],sum_mv[1])
         screen.blit(self.img, self.rct)
 
 
@@ -155,9 +158,12 @@ class Beam:
     def __init__(self, bird: Bird):
         self.img = pg.image.load(f"{MAIN_DIR}/fig/beam.png") 
         self.rct = self.img.get_rect()
-        self.rct.centery = bird.rct.centery
-        self.rct.centerx = bird.rct.centerx+bird.rct.width/2
-        self.vx, self.vy = +5,0
+        (self.vx, self.vy) = bird.dire
+        self.deg = math.atan2(-self.vy,self.vx)
+        self.deg2 = math.degrees(self.deg)
+        self.rct.centery = bird.rct.centery+bird.rct.height*self.vy/2
+        self.rct.centerx = bird.rct.centerx+bird.rct.width*self.vy/2
+        self.img = pg.transform.rotozoom(self.img,self.deg2,1.0)
  
     def update(self,screen:pg.Surface):
         self.rct.move_ip(self.vx,self.vy)
